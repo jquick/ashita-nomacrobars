@@ -14,3 +14,6 @@ It patches specific memory addresses that determine if the macro bar should be v
 
 Place the `nomacrobars` folder into your Ashita `addons` directory and load it via the Ashita launcher or by typing `/addon load nomacrobars` in-game.
 
+## Notes
+
+This addon is not compatible with the `macrofix` addon, as they both attempt to patch the same memory addresses. If you are using `macrofix`, you should disable the `nomacrobars` addon.
