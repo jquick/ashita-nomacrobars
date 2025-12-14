@@ -22,14 +22,18 @@ local nomacrobars = {
 ashita.events.register('load', 'load_cb', function ()
     local patched = 0;
     
-    -- We patch the specific subtraction instruction (sub eax,[esi+10]) to be (xor eax,eax; nop)
-    -- This forces the timer difference to be 0, preventing the macro bar from showing.
+    -- Robust byte signatures for the timer checks.
+    -- We patch the comparison instruction (cmp eax,ebx) to (stc; nop)
+    -- This sets the Carry Flag, which forces the subsequent 'jb' (Jump Below) to be taken.
+    -- This effectively hides the bar while preserving the EAX register (timer value), preventing crashes.
     local patterns = {
-        -- Pattern for Ctrl Timer
-        { name = 'Ctrl Timer', pattern = '2B46103BC3????????????68????????B9', off = 0x00, cnt = 0, patch = { 0x31, 0xC0, 0x90 } },
+        -- Pattern for Ctrl Timer: 2B4610 3BC3 ...
+        -- Patch Offset 3 (3BC3 -> F990)
+        { name = 'Ctrl Timer', pattern = '2B46103BC3????????????68????????B9', off = 0x03, cnt = 0, patch = { 0xF9, 0x90 } },
         
-        -- Pattern for Alt Timer
-        { name = 'Alt Timer',  pattern = '2B46103BC3????68????????B9',           off = 0x00, cnt = 0, patch = { 0x31, 0xC0, 0x90 } },
+        -- Pattern for Alt Timer: 2B4610 3BC3 ...
+        -- Patch Offset 3 (3BC3 -> F990)
+        { name = 'Alt Timer',  pattern = '2B46103BC3????68????????B9',           off = 0x03, cnt = 0, patch = { 0xF9, 0x90 } },
     };
 
     -- Apply patches
