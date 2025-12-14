@@ -1,4 +1,4 @@
-# nomacrobars
+# NoMacroBars
 
 A simple Ashita v4 addon that prevents the default game macro bars (macro palettes) from appearing when holding down the **Ctrl** or **Alt** keys.
 
@@ -13,3 +13,4 @@ It patches specific memory addresses that determine if the macro bar should be v
 ## Installation
 
 Place the `nomacrobars` folder into your Ashita `addons` directory and load it via the Ashita launcher or by typing `/addon load nomacrobars` in-game.
+
