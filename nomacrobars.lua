@@ -1,8 +1,3 @@
---[[
-* nomacrobars
-* Disables macro bar display by patching the timer calculation logic.
---]]
-
 addon.name      = 'nomacrobars';
 addon.author    = 'jquick';
 addon.version   = '1.3';
@@ -15,41 +10,23 @@ local nomacrobars = {
     ptrs = {},
 };
 
---[[
-* event: load
-* desc : Event called when the addon is being loaded.
---]]
 ashita.events.register('load', 'load_cb', function ()
     local patched = 0;
     
-    -- Robust byte signatures for the timer checks.
-    -- We patch the comparison instruction (cmp eax,ebx) to (stc; nop)
-    -- This sets the Carry Flag, which forces the subsequent 'jb' (Jump Below) to be taken.
-    -- This effectively hides the bar while preserving the EAX register (timer value), preventing crashes.
     local patterns = {
-        -- Pattern for Ctrl Timer: 2B4610 3BC3 ...
-        -- Patch Offset 3 (3BC3 -> F990)
         { name = 'Ctrl Timer', pattern = '2B46103BC3????????????68????????B9', off = 0x03, cnt = 0, patch = { 0xF9, 0x90 } },
-        
-        -- Pattern for Alt Timer: 2B4610 3BC3 ...
-        -- Patch Offset 3 (3BC3 -> F990)
         { name = 'Alt Timer',  pattern = '2B46103BC3????68????????B9',           off = 0x03, cnt = 0, patch = { 0xF9, 0x90 } },
     };
 
-    -- Apply patches
     for _, p in ipairs(patterns) do
-        -- Find the pattern address
         local scan_ptr = ashita.memory.find('FFXiMain.dll', 0, p.pattern, 0, p.cnt);
         
         if (scan_ptr ~= 0) then
-            -- Calculate the actual patch address using the offset
             local patch_addr = scan_ptr + p.off;
             
-            -- Backup and patch
             local backup = ashita.memory.read_array(patch_addr, #p.patch);
             ashita.memory.write_array(patch_addr, p.patch);
             
-            -- Store for restoration
             table.insert(nomacrobars.ptrs, { addr = patch_addr, backup = backup });
             patched = patched + 1;
             
@@ -66,12 +43,7 @@ ashita.events.register('load', 'load_cb', function ()
     end
 end);
 
---[[
-* event: unload
-* desc : Event called when the addon is being unloaded.
---]]
 ashita.events.register('unload', 'unload_cb', function ()
-    -- Restore patches to the original bytes
     for _, v in ipairs(nomacrobars.ptrs) do
         if (v.backup ~= nil and #v.backup > 0) then
             ashita.memory.write_array(v.addr, v.backup);
